@@ -1,51 +1,28 @@
 import wx
 import string
 
-class IntValidator(wx.PyValidator):
-    def __init__(self):
+class NumericValidator(wx.Validator):
+    def __init__(self, criteria, default = ''):
         super().__init__()
-        self.Bind(wx.EVT_CHAR, self.OnChar)
+        self.Bind(wx.EVT_TEXT, self.OnText)
+        self.val = ''
+        self.default = default
+        self.criteria = criteria
 
-    def OnChar(self, event):
-        print(f'Cur value: {self.GetWindow().GetValue()}')
-        # print(f'Event {dir(event)}({type(event)})')
-        
-        keycode = event.GetKeyCode()
-        if keycode < 256:
-            if chr(keycode) not in string.digits:
-                return
-        event.Skip()
-
-    def Clone(self):
-        return self.__class__()
-
-    def TransferToWindow(self):
-        return True
-
-    def TransferFromWindow(self):
-        return True
-
-    def Validate(self, parent):
-        return True
-
-
-class FloatValidator(wx.PyValidator):
-    def __init__(self):
-        super().__init__()
-        self.Bind(wx.EVT_CHAR, self.OnChar)
-
-    def OnChar(self, event):
+    def OnText(self, event):
+        new_val = event.GetString()
         try:
-            prev_value = self.GetWindow().GetValue()
-            new_char = chr(event.GetKeyCode())
-            float(prev_value + new_char)
-
+            self.criteria(new_val)
         except:
-            return
+            if len(new_val) == 0:
+                self.val = self.default
+            self.GetWindow().ChangeValue(self.val)
+        else:
+            self.val = new_val
         event.Skip()
 
     def Clone(self):
-        return self.__class__()
+        return self.__class__(self.criteria, self.default)
 
     def TransferToWindow(self):
         return True
@@ -55,3 +32,4 @@ class FloatValidator(wx.PyValidator):
 
     def Validate(self, parent):
         return True
+
