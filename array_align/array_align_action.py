@@ -13,12 +13,28 @@ class ArrayAlignAction(pcbnew.ActionPlugin):
         self.show_toolbar_button = True # Optional, defaults to False
         self.icon_file_name = os.path.join(os.path.dirname(__file__), 'icon.png') # Optional
 
+    def _getFromUnits(self, user_units):
+        units = {
+            0: lambda u: pcbnew.FromMils(u),
+            1: lambda u: pcbnew.FromMM(u),
+            5: lambda u: pcbnew.FromMils(u/1000),
+        }
+        return units[user_units]
+
+    def _getUnitName(self, user_units):
+        units = {
+            0: 'inch',
+            1: 'mm',
+            5: 'minch',
+        }
+        return units[user_units]
+
     def Run(self):
         # The entry function of the plugin that is executed on user action
 
         user_units = pcbnew.GetUserUnits()
-        fromUnits = lambda u: pcbnew.FromMM(u) if user_units else pcbnew.FromMils(u)
-        dlg = ArrayDialog(user_units = 'mm' if user_units else 'minch')
+        fromUnits = self._getFromUnits(user_units)
+        dlg = ArrayDialog(user_units = self._getUnitName(user_units))
         
         dlg.Center()
         if dlg.ShowModal() == wx.ID_OK:
@@ -78,7 +94,7 @@ class ArrayAlignAction(pcbnew.ActionPlugin):
     def _alignElems(self, selection_type=0, origin_type=1, rows=1, cols=1, hgap=0.0, vgap=0.0):
         board = pcbnew.GetBoard()
         selection_types = {
-            0: board.GetModules,
+            0: board.GetFootprints,
             1: board.GetDrawings,
             2: board.GetPads,
             3: board.GetTracks,

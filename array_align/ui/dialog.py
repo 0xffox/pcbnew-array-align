@@ -32,7 +32,7 @@ class ArrayDialog(wx.Dialog):
         self.elems['ch_elem_type'] = wx.Choice(
             p, 
             choices=[
-                'Module', 
+                'Footprints', 
                 'Drawings',
                 'Pads',
                 'Tracks'
